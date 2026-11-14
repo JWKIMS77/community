@@ -1,0 +1,29 @@
+# 커뮤니티 (Community)
+
+글 작성 · 카테고리 · 댓글 · 좋아요가 되는 한국형 커뮤니티 게시판 웹페이지입니다.
+
+- **배포 주소 (Claude Artifact):** https://claude.ai/artifact/VGhrBReh6DvHLi2Fds5KGu
+- **소스:** [`community.html`](community.html) — 단일 HTML 파일 (CSS/JS 포함)
+
+## 기능
+
+- 글쓰기 (카테고리: 자유 · 질문 · 정보 · 후기 · 공지)
+- 댓글, 좋아요, 조회수
+- 인기글 사이드바 (좋아요·댓글·조회수 기반 자동 선정)
+- 제목/내용 검색, 카테고리 필터
+- 내 글/댓글 삭제, 운영자(편집 권한) 모더레이션
+- 모바일 반응형, 라이트/다크 테마
+
+## 구조
+
+단일 파일 앱입니다. 데이터(게시글 `posts`, 댓글 `comments`, 좋아요 `likes`)는
+Claude Artifact의 공유 데이터베이스(`db` capability)에 저장되어 방문자 간에 공유됩니다.
+좋아요는 사용자별 문서(`likes/<userId>`)에 기록되어 본인만 수정할 수 있습니다.
+
+## 수정 방법
+
+1. `community.html`을 수정합니다.
+2. Claude 세션에서 위 Artifact URL로 다시 발행하면 같은 주소로 업데이트됩니다.
+
+브라우저에서 `community.html`을 직접 열면 데이터 연결 없이 레이아웃을 확인할 수 있습니다
+(개발용 미리보기 훅: `window.__app`).
