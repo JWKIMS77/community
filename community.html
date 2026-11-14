@@ -2,7 +2,7 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap">
 <style>
-/* Layout: sticky header + centered 1080px container; list column with popular-posts aside on desktop, one column on phone */
+/* Layout: sticky header + centered 1080px container; list column with aside on desktop, one column on phone */
 :root{
   --bg:#f7f8fa;
   --surface:#ffffff;
@@ -15,10 +15,12 @@
   --accent-soft:#eef3fe;
   --on-accent:#ffffff;
   --danger:#e5484d;
+  --star:#f6a609;
   --cat-free:#2e62e8;
   --cat-qna:#7c5cd6;
   --cat-info:#1a9e6e;
   --cat-review:#d97917;
+  --cat-job:#0f8c8c;
   --cat-notice:#e5484d;
   --shadow:0 1px 3px rgba(27,30,36,.06);
   --font:"Noto Sans KR",-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
@@ -27,8 +29,8 @@
   :root:not([data-theme="light"]){
     --bg:#111318; --surface:#1a1d24; --fg:#e8eaee; --muted:#9aa3b0; --faint:#7d8694;
     --border:#2a2e37; --accent:#6c93ff; --accent-strong:#86a6ff; --accent-soft:#1f2a45;
-    --on-accent:#10131a; --danger:#ff6369;
-    --cat-free:#6c93ff; --cat-qna:#a98df0; --cat-info:#3fc08f; --cat-review:#efa14a; --cat-notice:#ff6369;
+    --on-accent:#10131a; --danger:#ff6369; --star:#f0b13a;
+    --cat-free:#6c93ff; --cat-qna:#a98df0; --cat-info:#3fc08f; --cat-review:#efa14a; --cat-job:#38b8b8; --cat-notice:#ff6369;
     --shadow:0 1px 3px rgba(0,0,0,.4);
     color-scheme:dark;
   }
@@ -36,8 +38,8 @@
 :root[data-theme="dark"]{
   --bg:#111318; --surface:#1a1d24; --fg:#e8eaee; --muted:#9aa3b0; --faint:#7d8694;
   --border:#2a2e37; --accent:#6c93ff; --accent-strong:#86a6ff; --accent-soft:#1f2a45;
-  --on-accent:#10131a; --danger:#ff6369;
-  --cat-free:#6c93ff; --cat-qna:#a98df0; --cat-info:#3fc08f; --cat-review:#efa14a; --cat-notice:#ff6369;
+  --on-accent:#10131a; --danger:#ff6369; --star:#f0b13a;
+  --cat-free:#6c93ff; --cat-qna:#a98df0; --cat-info:#3fc08f; --cat-review:#efa14a; --cat-job:#38b8b8; --cat-notice:#ff6369;
   --shadow:0 1px 3px rgba(0,0,0,.4);
   color-scheme:dark;
 }
@@ -52,17 +54,25 @@ a{color:var(--accent)}
 
 /* ---------- header ---------- */
 .site-header{position:sticky;top:env(safe-area-inset-top,0px);z-index:50;background:var(--surface);border-bottom:1px solid var(--border)}
-.header-inner{max-width:1080px;margin:0 auto;display:flex;align-items:center;gap:12px;height:58px;
+.header-inner{max-width:1080px;margin:0 auto;display:flex;align-items:center;gap:16px;height:58px;
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
-.brand{display:flex;align-items:center;gap:8px;font-size:21px;font-weight:900;letter-spacing:-.5px;background:none;padding:0}
+.brand{display:flex;align-items:center;gap:8px;font-size:21px;font-weight:900;letter-spacing:-.5px;background:none;padding:0;flex:none}
 .brand-mark{width:28px;height:28px;border-radius:8px;background:var(--accent);color:var(--on-accent);display:grid;place-items:center;font-size:15px;font-weight:900}
+.top-nav{display:flex;gap:4px;min-width:0}
+.nav-tab{font-size:15px;font-weight:500;color:var(--muted);padding:8px 10px;border-radius:8px;white-space:nowrap}
+.nav-tab:hover{color:var(--fg)}
+.nav-tab[aria-pressed="true"]{color:var(--accent);font-weight:700;background:var(--accent-soft)}
 .header-spacer{flex:1}
 .btn{display:inline-flex;align-items:center;gap:6px;font-weight:700;border-radius:10px;padding:9px 16px;transition:background .15s}
 .btn-accent{background:var(--accent);color:var(--on-accent)}
 .btn-accent:hover{background:var(--accent-strong)}
 .btn-ghost{background:none;color:var(--muted);border:1px solid var(--border)}
 .btn-ghost:hover{color:var(--fg)}
-.btn:focus-visible,.chip:focus-visible,.post-row:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.btn:focus-visible,.chip:focus-visible,.post-row:focus-visible,.nav-tab:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+@media (max-width:480px){
+  .brand-text{display:none}
+  .header-inner{gap:8px;height:52px}
+}
 
 /* ---------- shell ---------- */
 .shell{max-width:1080px;margin:0 auto;
@@ -142,6 +152,39 @@ a{color:var(--accent)}
 .comment-form{display:flex;gap:8px;margin-top:14px}
 .comment-form input{flex:1;min-width:0}
 
+/* ---------- lock (조건부 열람) ---------- */
+.lock-note{display:flex;gap:10px;align-items:flex-start;background:var(--accent-soft);border:1px solid var(--border);border-radius:12px;padding:12px 16px;font-size:13.5px;margin:4px 0 14px}
+.lock-note strong{font-weight:700}
+.locked-text{filter:blur(5px);user-select:none;pointer-events:none;color:var(--muted)}
+@media (prefers-reduced-motion:no-preference){.locked-text{transition:filter .2s}}
+
+/* ---------- reviews ---------- */
+.review-summary{display:flex;gap:16px;align-items:baseline;padding:16px 18px;border-bottom:1px solid var(--border);flex-wrap:wrap}
+.review-summary .big{font-size:22px;font-weight:900;letter-spacing:-.4px}
+.review-summary .sub{font-size:13.5px;color:var(--muted)}
+.stars{color:var(--star);letter-spacing:1px;font-size:inherit}
+.stars .off{color:var(--border)}
+.company-row{width:100%;text-align:left;padding:16px 18px;border-bottom:1px solid var(--border);background:none;transition:background .1s}
+.company-row:hover{background:var(--bg)}
+.company-head{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.company-name{font-size:16px;font-weight:700;letter-spacing:-.2px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.company-score{font-weight:900;font-variant-numeric:tabular-nums}
+.company-count{font-size:13px;color:var(--faint)}
+.company-open{margin-left:auto;color:var(--faint);font-size:13px;flex:none}
+.company-reviews{border-bottom:1px solid var(--border);background:var(--bg);padding:6px 18px}
+.review-item{padding:14px 0;border-bottom:1px solid var(--border)}
+.review-item:last-child{border-bottom:none}
+.review-head{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:4px}
+.status-badge{font-size:12px;font-weight:700;border-radius:6px;padding:2px 8px;background:color-mix(in srgb, var(--muted) 12%, transparent);color:var(--muted)}
+.review-oneliner{font-weight:700;font-size:15px;margin:2px 0 6px;overflow-wrap:anywhere}
+.pros-cons{display:flex;flex-direction:column;gap:6px;font-size:14px}
+.pc-row{display:flex;gap:8px}
+.pc-tag{flex:none;font-weight:700;font-size:13px}
+.pc-tag.good{color:var(--cat-info)}
+.pc-tag.bad{color:var(--danger)}
+.pc-body{min-width:0;white-space:pre-wrap;overflow-wrap:anywhere}
+.review-meta{display:flex;gap:6px;align-items:center;font-size:12.5px;color:var(--faint);margin-top:8px;flex-wrap:wrap}
+
 /* ---------- write modal ---------- */
 .modal-wrap{position:fixed;inset:0;z-index:70;display:grid;place-items:center;
   padding:max(16px,env(safe-area-inset-left,0px));background:rgba(15,17,22,.5)}
@@ -149,9 +192,15 @@ a{color:var(--accent)}
 .modal h2{margin:0 0 18px;font-size:19px;letter-spacing:-.3px}
 .field{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
 .field label{font-size:13px;font-weight:700;color:var(--muted)}
-.field textarea{min-height:160px;resize:vertical}
+.field textarea{min-height:110px;resize:vertical}
+.field textarea.tall{min-height:160px}
 .modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:6px}
 .form-error{color:var(--danger);font-size:13px;min-height:18px;margin:0}
+.star-pick{display:flex;gap:4px}
+.star-pick button{font-size:26px;color:var(--border);padding:2px;line-height:1}
+.star-pick button[aria-pressed="true"]{color:var(--star)}
+.row-2{display:flex;gap:10px;flex-wrap:wrap}
+.row-2 .field{flex:1;min-width:140px}
 
 /* ---------- toast ---------- */
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(24px + env(safe-area-inset-bottom,0px));z-index:80;
@@ -162,8 +211,6 @@ a{color:var(--accent)}
   @keyframes pop{from{transform:translateY(8px);opacity:.6}to{transform:none;opacity:1}}
 }
 @media (max-width:480px){
-  .header-inner{height:52px}
-  .brand{font-size:19px}
   .detail-card{padding:18px}
 }
 </style>
@@ -171,8 +218,12 @@ a{color:var(--accent)}
 <header class="site-header">
   <div class="header-inner">
     <button class="brand" id="brand-home" aria-label="커뮤니티 홈으로">
-      <span class="brand-mark" aria-hidden="true">커</span>커뮤니티
+      <span class="brand-mark" aria-hidden="true">커</span><span class="brand-text">커뮤니티</span>
     </button>
+    <nav class="top-nav" aria-label="주요 메뉴">
+      <button class="nav-tab" id="nav-board">게시판</button>
+      <button class="nav-tab" id="nav-reviews">회사 리뷰</button>
+    </nav>
     <span class="header-spacer"></span>
     <button class="btn btn-accent" id="write-open">✏️ 글쓰기</button>
   </div>
@@ -192,13 +243,16 @@ a{color:var(--accent)}
 
 /* ---------- constants ---------- */
 const CATEGORIES = [
-  { key: "free",   label: "자유",  cssVar: "--cat-free" },
-  { key: "qna",    label: "질문",  cssVar: "--cat-qna" },
-  { key: "info",   label: "정보",  cssVar: "--cat-info" },
-  { key: "review", label: "후기",  cssVar: "--cat-review" },
-  { key: "notice", label: "공지",  cssVar: "--cat-notice" },
+  { key: "free",   label: "자유",     cssVar: "--cat-free" },
+  { key: "qna",    label: "질문",     cssVar: "--cat-qna" },
+  { key: "info",   label: "정보",     cssVar: "--cat-info" },
+  { key: "review", label: "후기",     cssVar: "--cat-review" },
+  { key: "job",    label: "구인구직", cssVar: "--cat-job" },
+  { key: "notice", label: "공지",     cssVar: "--cat-notice" },
 ];
 const catByKey = Object.fromEntries(CATEGORIES.map(c => [c.key, c]));
+const STATUS_LABELS = { current: "현직", former: "전직", interview: "면접" };
+const LOCK_FILLER = "이 내용은 조건을 충족한 회원만 볼 수 있습니다. 가려진 내용은 조건을 충족하면 바로 열립니다.";
 
 /* ---------- state ---------- */
 const state = {
@@ -206,14 +260,16 @@ const state = {
   uid: null, canWrite: null, canEdit: false,
   posts: [],            // {id, title, body, category, authorId, createdAt, views}
   comments: [],         // {id, postId, authorId, body, createdAt}
+  reviews: [],          // {id, company, rating, status, oneliner, pros, cons, authorId, createdAt}
   likes: {},            // userId -> {postId: true}
   profiles: {},         // userId -> name
-  loadedPosts: false, loadedComments: false, loadedLikes: false,
+  loadedPosts: false, loadedComments: false, loadedLikes: false, loadedReviews: false,
   connectTimedOut: false,
   category: "all",
   search: "",
-  route: "",            // "" = list, otherwise post id
-  deleteArmed: null,    // id of post/comment with delete confirmation open
+  route: "",            // "" = board list, "reviews" = review page, otherwise post id
+  openCompany: null,    // expanded company on review page
+  deleteArmed: null,
 };
 const viewedThisSession = new Set();
 
@@ -252,6 +308,26 @@ function catBadge(key) {
   const c = catByKey[key] || catByKey.free;
   return '<span class="cat-badge" style="color:var(' + c.cssVar + ');background:color-mix(in srgb, var(' + c.cssVar + ') 12%, transparent)">' + esc(c.label) + "</span>";
 }
+function stars(n, outOf) {
+  const full = Math.max(0, Math.min(5, Math.round(n)));
+  return '<span class="stars" aria-label="별점 ' + (outOf ? n.toFixed(1) : full) + '점">'
+    + "★".repeat(full) + '<span class="off">' + "★".repeat(5 - full) + "</span></span>";
+}
+
+/* ---------- 조건부 열람 (성예사 오마주) ---------- */
+// 회사 리뷰 본문: 내가 리뷰를 1건 이상 작성해야 열람
+function reviewsUnlocked() {
+  if (state.canEdit) return true;
+  return !!(state.uid && state.reviews.some(r => r.authorId === state.uid));
+}
+// 게시글 댓글: 글 또는 댓글을 1개 이상 작성한 회원만 열람 (글 작성자 본인 포함)
+function commentsUnlocked(post) {
+  if (state.canEdit) return true;
+  if (!state.uid) return false;
+  if (post && post.authorId === state.uid) return true;
+  return state.posts.some(p => p.authorId === state.uid)
+      || state.comments.some(c => c.authorId === state.uid);
+}
 
 let toastTimer = null;
 function toast(msg) {
@@ -268,6 +344,7 @@ async function resolveProfiles() {
   const ids = new Set();
   state.posts.forEach(p => p.authorId && ids.add(p.authorId));
   state.comments.forEach(c => c.authorId && ids.add(c.authorId));
+  state.reviews.forEach(r => r.authorId && ids.add(r.authorId));
   const missing = [...ids].filter(id => state.profiles[id] === undefined);
   if (!missing.length) return;
   profileFetchQueued = true;
@@ -284,14 +361,24 @@ async function resolveProfiles() {
 
 /* ---------- views ---------- */
 function render() {
+  // header nav state
+  $("#nav-board").setAttribute("aria-pressed", String(state.route !== "reviews"));
+  $("#nav-reviews").setAttribute("aria-pressed", String(state.route === "reviews"));
+  $("#write-open").innerHTML = state.route === "reviews" ? "⭐ 리뷰 쓰기" : "✏️ 글쓰기";
+
   const root = $("#view-root");
-  const post = state.route ? state.posts.find(p => p.id === state.route) : null;
-  if (state.route && post) {
-    root.innerHTML = renderDetail(post);
-    bindDetail(post);
+  if (state.route === "reviews") {
+    root.innerHTML = renderReviews();
+    bindReviews();
   } else {
-    root.innerHTML = renderList();
-    bindList();
+    const post = state.route ? state.posts.find(p => p.id === state.route) : null;
+    if (state.route && post) {
+      root.innerHTML = renderDetail(post);
+      bindDetail(post);
+    } else {
+      root.innerHTML = renderList();
+      bindList();
+    }
   }
   resolveProfiles();
 }
@@ -354,7 +441,6 @@ function renderList() {
       + "</div>";
   }
 
-  // popular: score = likes*3 + comments*2 + views*0.2
   const hot = [...state.posts]
     .map(p => ({ p, score: likeCount(p.id) * 3 + commentsFor(p.id).length * 2 + (p.views || 0) * 0.2 }))
     .sort((a, b) => b.score - a.score).slice(0, 5);
@@ -371,7 +457,109 @@ function renderList() {
         ? hot.map((h, i) => '<button class="hot-item" data-post="' + esc(h.p.id) + '"><span class="hot-rank">' + (i + 1) + '</span><span class="hot-title">' + esc(h.p.title) + '</span><span class="hot-meta">[' + commentsFor(h.p.id).length + "]</span></button>").join("")
         : '<p class="about-text">아직 인기글이 없어요. 좋아요와 댓글이 쌓이면 여기에 표시됩니다.</p>')
     + "</div>"
-    + '<div class="aside-card"><h3>👋 커뮤니티 안내</h3><p class="about-text">자유롭게 이야기를 나누는 공간이에요. 질문, 정보, 후기 무엇이든 환영합니다. 서로를 존중하는 따뜻한 커뮤니티를 함께 만들어 주세요.</p></div>'
+    + '<div class="aside-card"><h3>👋 커뮤니티 안내</h3><p class="about-text">자유롭게 이야기를 나누는 공간이에요. 구인구직 정보와 회사 리뷰도 나눠 보세요. 댓글은 글이나 댓글을 1개 이상 작성한 회원만 볼 수 있습니다.</p></div>'
+    + "</aside></div>";
+}
+
+/* ---------- 회사 리뷰 (잡코리아 오마주) ---------- */
+function companyGroups() {
+  const q = state.search.trim().toLowerCase();
+  const map = new Map();
+  for (const r of state.reviews) {
+    const name = (r.company || "").trim();
+    if (!name) continue;
+    if (q && !name.toLowerCase().includes(q)) continue;
+    if (!map.has(name)) map.set(name, []);
+    map.get(name).push(r);
+  }
+  const groups = [...map.entries()].map(([name, rs]) => {
+    const avg = rs.reduce((s, r) => s + (Number(r.rating) || 0), 0) / rs.length;
+    const latest = Math.max(...rs.map(r => r.createdAt || 0));
+    return { name, reviews: rs.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0)), avg, latest };
+  });
+  groups.sort((a, b) => b.latest - a.latest);
+  return groups;
+}
+
+function renderReviews() {
+  const unlocked = reviewsUnlocked();
+  const groups = companyGroups();
+  const total = state.reviews.length;
+  const totalAvg = total ? state.reviews.reduce((s, r) => s + (Number(r.rating) || 0), 0) / total : 0;
+
+  const lockNote = unlocked ? "" :
+    '<div class="lock-note"><span aria-hidden="true">🔒</span><div><strong>리뷰 내용은 리뷰를 1건 작성한 회원에게만 공개돼요.</strong><br>'
+    + '내 리뷰를 남기면 모든 회사의 장점·단점 리뷰가 바로 열립니다. <a href="#" id="lock-write-review">리뷰 쓰러 가기</a></div></div>';
+
+  let body;
+  if (groups.length) {
+    body = groups.map(g => {
+      const open = state.openCompany === g.name;
+      let expanded = "";
+      if (open) {
+        expanded = '<div class="company-reviews">' + g.reviews.map(r => {
+          const mine = state.uid && r.authorId === state.uid;
+          const armed = state.deleteArmed === "review:" + r.id;
+          const canSee = unlocked || mine;
+          const prosCons = canSee
+            ? '<div class="pros-cons">'
+              + (r.pros ? '<div class="pc-row"><span class="pc-tag good">장점</span><span class="pc-body">' + esc(r.pros) + "</span></div>" : "")
+              + (r.cons ? '<div class="pc-row"><span class="pc-tag bad">단점</span><span class="pc-body">' + esc(r.cons) + "</span></div>" : "")
+              + "</div>"
+            : '<div class="pros-cons"><div class="pc-row"><span class="pc-tag good">장점</span><span class="pc-body locked-text" aria-hidden="true">' + esc(LOCK_FILLER) + '</span></div>'
+              + '<div class="pc-row"><span class="pc-tag bad">단점</span><span class="pc-body locked-text" aria-hidden="true">' + esc(LOCK_FILLER) + "</span></div></div>";
+          return '<div class="review-item">'
+            + '<div class="review-head">' + stars(Number(r.rating) || 0)
+            + '<span class="status-badge">' + esc(STATUS_LABELS[r.status] || "기타") + "</span>"
+            + ((mine || state.canEdit)
+                ? (armed
+                    ? '<span class="del-confirm">삭제할까요? <button class="del-yes" data-del-review-yes="' + esc(r.id) + '">삭제</button><button data-del-cancel>취소</button></span>'
+                    : '<button class="comment-del" style="margin-left:auto" data-del-review="' + esc(r.id) + '">삭제</button>')
+                : "")
+            + "</div>"
+            + (r.oneliner ? '<div class="review-oneliner">"' + esc(r.oneliner) + '"</div>' : "")
+            + prosCons
+            + '<div class="review-meta"><span class="author" data-uid="' + esc(r.authorId || "") + '">' + esc(authorName(r.authorId)) + "</span>"
+            + '<span class="dot"></span><span>' + timeAgo(r.createdAt) + "</span></div>"
+            + "</div>";
+        }).join("") + "</div>";
+      }
+      return '<button class="company-row" data-company="' + esc(g.name) + '">'
+        + '<span class="company-head"><span class="company-name">' + esc(g.name) + "</span>"
+        + stars(g.avg, true)
+        + '<span class="company-score">' + g.avg.toFixed(1) + "</span>"
+        + '<span class="company-count">리뷰 ' + g.reviews.length + "</span>"
+        + '<span class="company-open">' + (open ? "접기 ▲" : "펼치기 ▼") + "</span></span>"
+        + "</button>" + expanded;
+    }).join("");
+  } else if (!state.db || (!state.loadedReviews && !state.connectTimedOut)) {
+    body = '<div class="empty"><div class="empty-icon">⭐</div><h3>불러오는 중이에요</h3><p>잠시만 기다려 주세요.</p></div>';
+  } else {
+    body = '<div class="empty"><div class="empty-icon">⭐</div>'
+      + "<h3>" + (state.search ? "조건에 맞는 회사가 없어요" : "아직 등록된 회사 리뷰가 없어요") + "</h3>"
+      + "<p>" + (state.search ? "검색어를 바꿔 보세요." : "다녔던 회사, 면접 본 회사의 솔직한 리뷰를 남겨 보세요.") + "</p>"
+      + (state.search ? "" : '<button class="btn btn-accent" id="empty-review">⭐ 첫 리뷰 쓰기</button>')
+      + "</div>";
+  }
+
+  const top = [...companyGroups()].filter(g => g.reviews.length >= 1).sort((a, b) => b.avg - a.avg).slice(0, 5);
+
+  return '<div class="columns"><div class="main-col">'
+    + lockNote
+    + '<div class="list-card">'
+    + '<div class="review-summary"><span class="big">회사 리뷰</span>'
+    + '<span>' + stars(totalAvg, true) + ' <span class="company-score">' + (total ? totalAvg.toFixed(1) : "-") + "</span></span>"
+    + '<span class="sub">전체 리뷰 ' + total + "개 · 회사 " + companyGroups().length + "곳</span></div>"
+    + '<div class="list-toolbar"><input type="search" id="search-input" placeholder="회사명 검색" value="' + esc(state.search) + '" aria-label="회사 검색"></div>'
+    + body
+    + "</div></div>"
+    + '<aside class="aside-col">'
+    + '<div class="aside-card"><h3>🏆 평점 TOP</h3>'
+    + (top.length
+        ? top.map((g, i) => '<button class="hot-item" data-company="' + esc(g.name) + '"><span class="hot-rank">' + (i + 1) + '</span><span class="hot-title">' + esc(g.name) + '</span><span class="hot-meta">★' + g.avg.toFixed(1) + "</span></button>").join("")
+        : '<p class="about-text">리뷰가 쌓이면 평점 높은 회사가 표시됩니다.</p>')
+    + "</div>"
+    + '<div class="aside-card"><h3>🔒 열람 조건</h3><p class="about-text">리뷰의 장점·단점 내용은 <b>리뷰를 1건 작성한 회원</b>에게만 공개됩니다. 별점과 한줄평은 누구나 볼 수 있어요. 서로의 솔직한 리뷰가 모두에게 도움이 됩니다.</p></div>'
     + "</aside></div>";
 }
 
@@ -381,11 +569,17 @@ function renderDetail(p) {
   const mine = state.uid && p.authorId === state.uid;
   const canDelete = mine || state.canEdit;
   const armed = state.deleteArmed === "post:" + p.id;
+  const unlocked = commentsUnlocked(p);
+
+  const lockNote = (unlocked || !cs.length) ? "" :
+    '<div class="lock-note"><span aria-hidden="true">🔒</span><div><strong>댓글은 글이나 댓글을 1개 이상 작성한 회원만 볼 수 있어요.</strong><br>'
+    + "아래에 댓글을 남기면 바로 열람할 수 있습니다.</div></div>";
 
   const commentsHtml = cs.length
     ? cs.map(c => {
         const cMine = state.uid && c.authorId === state.uid;
         const cArmed = state.deleteArmed === "comment:" + c.id;
+        const canSee = unlocked || cMine;
         return '<div class="comment">'
           + '<div class="comment-head"><span class="comment-author" data-uid="' + esc(c.authorId || "") + '">' + esc(authorName(c.authorId)) + "</span>"
           + '<span class="comment-time">' + timeAgo(c.createdAt) + "</span>"
@@ -395,7 +589,10 @@ function renderDetail(p) {
                   : '<button class="comment-del" data-del-comment="' + esc(c.id) + '">삭제</button>')
               : "")
           + "</div>"
-          + '<div class="comment-body">' + esc(c.body) + "</div></div>";
+          + (canSee
+              ? '<div class="comment-body">' + esc(c.body) + "</div>"
+              : '<div class="comment-body locked-text" aria-hidden="true">' + esc(LOCK_FILLER) + "</div>")
+          + "</div>";
       }).join("")
     : '<p class="about-text">첫 댓글을 남겨 보세요.</p>';
 
@@ -415,7 +612,7 @@ function renderDetail(p) {
             : '<button class="del-btn" id="del-post">글 삭제</button>')
         : "")
     + "</div>"
-    + '<div class="comments"><h3>댓글 ' + cs.length + "</h3>" + commentsHtml
+    + '<div class="comments"><h3>댓글 ' + cs.length + "</h3>" + lockNote + commentsHtml
     + '<form class="comment-form" id="comment-form"><input type="text" id="comment-input" maxlength="1000" placeholder="댓글을 입력하세요" autocomplete="off"><button class="btn btn-accent" type="submit">등록</button></form>'
     + "</div></div>";
 }
@@ -423,6 +620,7 @@ function renderDetail(p) {
 /* ---------- bindings ---------- */
 function goTo(route) {
   state.deleteArmed = null;
+  if ((route === "reviews") !== (state.route === "reviews")) state.search = "";
   state.route = route;
   const want = route ? "#" + route : "#";
   if (location.hash !== want && !(route === "" && location.hash === "")) {
@@ -430,7 +628,19 @@ function goTo(route) {
   }
   render();
   window.scrollTo(0, 0);
-  if (route) bumpViews(route);
+  if (route && route !== "reviews") bumpViews(route);
+}
+
+function bindSearch() {
+  const si = $("#search-input");
+  if (!si) return;
+  si.addEventListener("input", () => {
+    state.search = si.value;
+    const pos = si.selectionStart;
+    render();
+    const si2 = $("#search-input");
+    if (si2) { si2.focus(); try { si2.setSelectionRange(pos, pos); } catch (e) {} }
+  });
 }
 
 function bindList() {
@@ -438,17 +648,25 @@ function bindList() {
     state.category = ch.dataset.cat; render();
   }));
   document.querySelectorAll("[data-post]").forEach(el => el.addEventListener("click", () => goTo(el.dataset.post)));
-  const si = $("#search-input");
-  if (si) si.addEventListener("input", () => {
-    state.search = si.value;
-    // re-render list body only via full render; keep focus
-    const pos = si.selectionStart;
-    render();
-    const si2 = $("#search-input");
-    if (si2) { si2.focus(); try { si2.setSelectionRange(pos, pos); } catch (e) {} }
-  });
+  bindSearch();
   const ew = $("#empty-write");
   if (ew) ew.addEventListener("click", openWriteModal);
+}
+
+function bindReviews() {
+  bindSearch();
+  document.querySelectorAll("[data-company]").forEach(el => el.addEventListener("click", () => {
+    state.openCompany = (state.openCompany === el.dataset.company) ? null : el.dataset.company;
+    state.deleteArmed = null;
+    render();
+  }));
+  const er = $("#empty-review");
+  if (er) er.addEventListener("click", openReviewModal);
+  const lw = $("#lock-write-review");
+  if (lw) lw.addEventListener("click", ev => { ev.preventDefault(); openReviewModal(); });
+  document.querySelectorAll("[data-del-cancel]").forEach(b => b.addEventListener("click", ev => { ev.stopPropagation(); state.deleteArmed = null; render(); }));
+  document.querySelectorAll("[data-del-review]").forEach(b => b.addEventListener("click", ev => { ev.stopPropagation(); state.deleteArmed = "review:" + b.dataset.delReview; render(); }));
+  document.querySelectorAll("[data-del-review-yes]").forEach(b => b.addEventListener("click", ev => { ev.stopPropagation(); deleteReview(b.dataset.delReviewYes); }));
 }
 
 function bindDetail(p) {
@@ -467,10 +685,15 @@ function bindDetail(p) {
   });
 }
 
-/* ---------- write modal ---------- */
+/* ---------- write modals ---------- */
+function writableOr(msg) {
+  if (!state.db) { toast("데이터에 연결되어 있지 않아요."); return false; }
+  if (state.canWrite === false) { toast(msg); return false; }
+  return true;
+}
+
 function openWriteModal() {
-  if (!state.db) { toast("데이터에 연결되어 있지 않아 글을 쓸 수 없어요."); return; }
-  if (state.canWrite === false) { toast("글쓰기 권한이 없어요. 공유 설정에서 권한을 받아야 합니다."); return; }
+  if (!writableOr("글쓰기 권한이 없어요. 공유 설정에서 권한을 받아야 합니다.")) return;
   const root = $("#modal-root");
   root.innerHTML = '<div class="modal-wrap" id="modal-wrap"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="write-title">'
     + '<h2 id="write-title">새 글 쓰기</h2>'
@@ -478,16 +701,46 @@ function openWriteModal() {
     + CATEGORIES.filter(c => c.key !== "notice" || state.canEdit).map(c => '<option value="' + c.key + '">' + esc(c.label) + "</option>").join("")
     + "</select></div>"
     + '<div class="field"><label for="w-title">제목</label><input type="text" id="w-title" maxlength="120" placeholder="제목을 입력하세요" autocomplete="off"></div>'
-    + '<div class="field"><label for="w-body">내용</label><textarea id="w-body" maxlength="20000" placeholder="내용을 입력하세요"></textarea></div>'
+    + '<div class="field"><label for="w-body">내용</label><textarea id="w-body" class="tall" maxlength="20000" placeholder="내용을 입력하세요"></textarea></div>'
     + '<p class="form-error" id="w-error"></p>'
     + '<div class="modal-actions"><button class="btn btn-ghost" id="w-cancel">취소</button><button class="btn btn-accent" id="w-submit">등록</button></div>'
     + "</div></div>";
-  $("#w-cancel").addEventListener("click", closeWriteModal);
-  $("#modal-wrap").addEventListener("click", ev => { if (ev.target.id === "modal-wrap") closeWriteModal(); });
+  $("#w-cancel").addEventListener("click", closeModal);
+  $("#modal-wrap").addEventListener("click", ev => { if (ev.target.id === "modal-wrap") closeModal(); });
   $("#w-submit").addEventListener("click", submitPost);
   $("#w-title").focus();
 }
-function closeWriteModal() { $("#modal-root").innerHTML = ""; }
+
+let pickedRating = 0;
+function openReviewModal() {
+  if (!writableOr("리뷰 작성 권한이 없어요. 공유 설정에서 권한을 받아야 합니다.")) return;
+  pickedRating = 0;
+  const root = $("#modal-root");
+  root.innerHTML = '<div class="modal-wrap" id="modal-wrap"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="review-title">'
+    + '<h2 id="review-title">회사 리뷰 쓰기</h2>'
+    + '<div class="row-2">'
+    + '<div class="field"><label for="r-company">회사명</label><input type="text" id="r-company" maxlength="60" placeholder="예: 한빛전자" autocomplete="off"></div>'
+    + '<div class="field"><label for="r-status">관계</label><select id="r-status"><option value="current">현직</option><option value="former">전직</option><option value="interview">면접</option></select></div>'
+    + "</div>"
+    + '<div class="field"><label id="r-stars-label">별점</label><div class="star-pick" role="group" aria-labelledby="r-stars-label">'
+    + [1,2,3,4,5].map(n => '<button type="button" data-star="' + n + '" aria-pressed="false" aria-label="' + n + '점">★</button>').join("")
+    + "</div></div>"
+    + '<div class="field"><label for="r-oneliner">한줄평</label><input type="text" id="r-oneliner" maxlength="100" placeholder="이 회사를 한 문장으로 표현하면?" autocomplete="off"></div>'
+    + '<div class="field"><label for="r-pros">장점</label><textarea id="r-pros" maxlength="3000" placeholder="좋았던 점을 적어 주세요"></textarea></div>'
+    + '<div class="field"><label for="r-cons">단점</label><textarea id="r-cons" maxlength="3000" placeholder="아쉬웠던 점을 적어 주세요"></textarea></div>'
+    + '<p class="form-error" id="r-error"></p>'
+    + '<div class="modal-actions"><button class="btn btn-ghost" id="r-cancel">취소</button><button class="btn btn-accent" id="r-submit">등록</button></div>'
+    + "</div></div>";
+  document.querySelectorAll("[data-star]").forEach(b => b.addEventListener("click", () => {
+    pickedRating = Number(b.dataset.star);
+    document.querySelectorAll("[data-star]").forEach(x => x.setAttribute("aria-pressed", String(Number(x.dataset.star) <= pickedRating)));
+  }));
+  $("#r-cancel").addEventListener("click", closeModal);
+  $("#modal-wrap").addEventListener("click", ev => { if (ev.target.id === "modal-wrap") closeModal(); });
+  $("#r-submit").addEventListener("click", submitReview);
+  $("#r-company").focus();
+}
+function closeModal() { $("#modal-root").innerHTML = ""; }
 
 let submitting = false;
 async function submitPost() {
@@ -509,7 +762,7 @@ async function submitPost() {
       createdAt: Date.now(),
       views: 0,
     });
-    closeWriteModal();
+    closeModal();
     toast("글이 등록되었어요.");
     goTo(id);
   } catch (e) {
@@ -517,6 +770,41 @@ async function submitPost() {
       ? "글을 저장할 권한이 없어요."
       : "저장에 실패했어요. 잠시 후 다시 시도해 주세요.";
     const sb = $("#w-submit"); if (sb) sb.textContent = "등록";
+  } finally {
+    submitting = false;
+  }
+}
+
+async function submitReview() {
+  if (submitting) return;
+  const company = $("#r-company").value.trim();
+  const status = $("#r-status").value;
+  const oneliner = $("#r-oneliner").value.trim();
+  const pros = $("#r-pros").value.trim();
+  const cons = $("#r-cons").value.trim();
+  const err = $("#r-error");
+  if (!company) { err.textContent = "회사명을 입력해 주세요."; return; }
+  if (!pickedRating) { err.textContent = "별점을 선택해 주세요."; return; }
+  if (!pros && !cons) { err.textContent = "장점이나 단점 중 하나는 적어 주세요."; return; }
+  err.textContent = "";
+  submitting = true;
+  $("#r-submit").textContent = "등록 중...";
+  try {
+    const id = newId();
+    await state.db.collection("reviews").doc(id).set({
+      company, rating: pickedRating, status, oneliner, pros, cons,
+      authorId: state.uid || null,
+      createdAt: Date.now(),
+    });
+    closeModal();
+    state.openCompany = company;
+    toast("리뷰가 등록되었어요. 이제 모든 리뷰를 볼 수 있습니다!");
+    goTo("reviews");
+  } catch (e) {
+    err.textContent = (e && e.code === "invalid_argument")
+      ? "리뷰를 저장할 권한이 없어요."
+      : "저장에 실패했어요. 잠시 후 다시 시도해 주세요.";
+    const sb = $("#r-submit"); if (sb) sb.textContent = "등록";
   } finally {
     submitting = false;
   }
@@ -566,7 +854,6 @@ async function submitComment(postId) {
 async function deletePost(p) {
   try {
     await state.db.doc("posts/" + p.id).delete();
-    // best effort: remove its comments
     const cs = commentsFor(p.id);
     for (const c of cs) {
       try { await state.db.doc("comments/" + c.id).delete(); } catch (e) {}
@@ -583,6 +870,17 @@ async function deleteComment(id) {
   try {
     await state.db.doc("comments/" + id).delete();
     state.deleteArmed = null;
+  } catch (e) {
+    toast("삭제에 실패했어요.");
+    state.deleteArmed = null; render();
+  }
+}
+
+async function deleteReview(id) {
+  try {
+    await state.db.doc("reviews/" + id).delete();
+    state.deleteArmed = null;
+    toast("리뷰를 삭제했어요.");
   } catch (e) {
     toast("삭제에 실패했어요.");
     state.deleteArmed = null; render();
@@ -614,10 +912,17 @@ function routeFromHash() {
 
 async function boot() {
   $("#brand-home").addEventListener("click", () => { state.category = "all"; state.search = ""; goTo(""); });
-  $("#write-open").addEventListener("click", openWriteModal);
+  $("#nav-board").addEventListener("click", () => goTo(""));
+  $("#nav-reviews").addEventListener("click", () => goTo("reviews"));
+  $("#write-open").addEventListener("click", () => {
+    if (state.route === "reviews") openReviewModal(); else openWriteModal();
+  });
   window.addEventListener("hashchange", () => {
     const r = routeFromHash();
-    if (r !== state.route) { state.route = r; state.deleteArmed = null; render(); if (r) bumpViews(r); }
+    if (r !== state.route) {
+      state.route = r; state.deleteArmed = null; render();
+      if (r && r !== "reviews") bumpViews(r);
+    }
   });
   state.route = routeFromHash();
   render();
@@ -635,7 +940,7 @@ async function boot() {
 
   const connectTimer = setTimeout(() => { state.connectTimedOut = true; renderBanner(); render(); }, 10000);
   const maybeClear = () => {
-    if (state.loadedPosts && state.loadedComments && state.loadedLikes) {
+    if (state.loadedPosts && state.loadedComments && state.loadedLikes && state.loadedReviews) {
       clearTimeout(connectTimer); state.connectTimedOut = false; renderBanner();
     }
   };
@@ -652,6 +957,12 @@ async function boot() {
     render();
   }, e => { state.loadedComments = true; maybeClear(); });
 
+  db.collection("reviews").orderBy("createdAt", "desc").limit(1000).onSnapshot(snap => {
+    state.reviews = snap.docs.filter(d => d.exists).map(d => Object.assign({ id: d.id }, d.data()));
+    if (!snap.metadata.fromCache) { state.loadedReviews = true; maybeClear(); }
+    render();
+  }, e => { state.loadedReviews = true; maybeClear(); });
+
   db.collection("likes").limit(1000).onSnapshot(snap => {
     const likes = {};
     snap.docs.forEach(d => { if (d.exists) likes[d.id] = (d.data() || {}).posts || {}; });
@@ -660,7 +971,7 @@ async function boot() {
     render();
   }, e => { state.loadedLikes = true; maybeClear(); });
 
-  if (state.route) bumpViews(state.route);
+  if (state.route && state.route !== "reviews") bumpViews(state.route);
 }
 
 /* preview hook for local layout checks only (no-op in production use) */
